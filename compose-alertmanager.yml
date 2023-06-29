@@ -1,0 +1,34 @@
+version: "3.8"
+services:
+  alertmanager:
+    image: quay.io/kubealex/eda-alertmanager
+    ports: "9093:9093"
+    hostname: alertmanager
+    networks:
+      - eda-ansible
+    depends_on:
+      - eda-ansible
+
+  quarkus-client:
+    image: quay.io/lordofthejars/eda-quarkus-tester:1.0.0
+    hostname: eda-quarkus
+    restart: on-failure
+    ports: 8080:8080
+    networks:
+      - eda-ansible
+
+  ansible:
+    image: quay.io/kubealex/eda-ansible
+    hostname: ansible
+    restart: on-failure
+    ports:
+      - 5000:5000
+      - 5001:5001
+    volumes:
+      - ./eda-ansible:/eda-ansible:Z
+    networks:
+      - eda-ansible
+    entrypoint: ansible-rulebook -i inventory.yml --rulebook eda-rulebook-alertmanager.yml --verbose
+networks:
+  eda-ansible:
+    name: eda-ansible
